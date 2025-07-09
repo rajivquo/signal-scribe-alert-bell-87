@@ -12,16 +12,37 @@ export const useSaveTsManager = () => {
   const isLongPressRef = useRef(false);
 
   // Save Ts button handlers
-  const handleSaveTsMouseDown = (e: React.MouseEvent | React.TouchEvent, signalsText: string) => {
+  const handleSaveTsMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
     console.log('💾 SaveTsManager: Save Ts button mouse down');
     e.preventDefault();
     e.stopPropagation();
     setSaveTsButtonPressed(true);
     isLongPressRef.current = false;
     
-    longPressTimerRef.current = setTimeout(async () => {
-      console.log('💾 SaveTsManager: Long press detected - processing and downloading file');
+    longPressTimerRef.current = setTimeout(() => {
+      console.log('💾 SaveTsManager: Long press detected - showing save dialog');
       isLongPressRef.current = true;
+      setShowSaveTsDialog(true);
+    }, 3000);
+  };
+
+  const handleSaveTsMouseUp = async (e: React.MouseEvent | React.TouchEvent, signalsText: string) => {
+    console.log('💾 SaveTsManager: Save Ts button mouse up', {
+      isLongPress: isLongPressRef.current
+    });
+    
+    e.preventDefault();
+    e.stopPropagation();
+    setSaveTsButtonPressed(false);
+    
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    
+    // If it wasn't a long press, download the file
+    if (!isLongPressRef.current) {
+      console.log('💾 SaveTsManager: Short press detected - downloading file');
       
       try {
         // Extract timestamps and process them
@@ -56,29 +77,6 @@ export const useSaveTsManager = () => {
       } catch (error) {
         console.error('💾 SaveTsManager: Error downloading file:', error);
       }
-      
-      // Show dialog for settings configuration
-      setShowSaveTsDialog(true);
-    }, 3000);
-  };
-
-  const handleSaveTsMouseUp = (e: React.MouseEvent | React.TouchEvent) => {
-    console.log('💾 SaveTsManager: Save Ts button mouse up', {
-      isLongPress: isLongPressRef.current
-    });
-    
-    e.preventDefault();
-    e.stopPropagation();
-    setSaveTsButtonPressed(false);
-    
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-    
-    // If it wasn't a long press, do nothing (or could show a toast)
-    if (!isLongPressRef.current) {
-      console.log('💾 SaveTsManager: Short press detected - no action');
     }
   };
 

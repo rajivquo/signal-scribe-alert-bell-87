@@ -42,9 +42,13 @@ export const useSignalTracker = () => {
     handleSaveTsCancel
   } = useSaveTsManager();
 
-  // Wrapper function to pass signalsText to handleSaveTsMouseDown
+  // Wrapper functions to pass signalsText to handlers
   const handleSaveTsMouseDownWithSignals = (e: React.MouseEvent | React.TouchEvent) => {
-    handleSaveTsMouseDown(e, signalsText);
+    handleSaveTsMouseDown(e);
+  };
+
+  const handleSaveTsMouseUpWithSignals = (e: React.MouseEvent | React.TouchEvent) => {
+    handleSaveTsMouseUp(e, signalsText);
   };
 
 
@@ -64,7 +68,7 @@ export const useSignalTracker = () => {
     setSaveTsAntidelayInput,
     handleSaveSignals,
     handleSaveTsMouseDown: handleSaveTsMouseDownWithSignals,
-    handleSaveTsMouseUp,
+    handleSaveTsMouseUp: handleSaveTsMouseUpWithSignals,
     handleSaveTsMouseLeave,
     handleBrowseFile,
     handleSaveTsSubmit: originalHandleSaveTsSubmit,
