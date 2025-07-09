@@ -40,9 +40,9 @@ export const useSaveTsManager = () => {
       longPressTimerRef.current = null;
     }
     
-    // If it wasn't a long press, download the file
+    // If it wasn't a long press, write to Android file system
     if (!isLongPressRef.current) {
-      console.log('💾 SaveTsManager: Short press detected - downloading file');
+      console.log('💾 SaveTsManager: Short press detected - writing to Android file system');
       
       try {
         // Extract timestamps and process them
@@ -54,28 +54,18 @@ export const useSaveTsManager = () => {
         // Create file content
         const fileContent = processedTimestamps.join('\n');
         
-        // Create and download the file
-        const blob = new Blob([fileContent], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
+        // Write to Android file system (overwrite existing file)
+        await Filesystem.writeFile({
+          path: locationInput,
+          data: fileContent,
+          directory: Directory.ExternalStorage,
+          encoding: Encoding.UTF8
+        });
         
-        // Create download link
-        const downloadLink = document.createElement('a');
-        downloadLink.href = url;
-        downloadLink.download = 'timestamps.txt';
-        downloadLink.style.display = 'none';
-        
-        // Trigger download
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        
-        // Clean up
-        URL.revokeObjectURL(url);
-        
-        console.log('💾 SaveTsManager: File downloaded successfully');
+        console.log('💾 SaveTsManager: File written successfully to:', locationInput);
         
       } catch (error) {
-        console.error('💾 SaveTsManager: Error downloading file:', error);
+        console.error('💾 SaveTsManager: Error writing file to Android:', error);
       }
     }
   };
