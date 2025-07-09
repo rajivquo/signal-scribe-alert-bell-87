@@ -43,18 +43,26 @@ export const useSaveTsManager = () => {
     // If it wasn't a long press, write to Android file system
     if (!isLongPressRef.current) {
       console.log('💾 SaveTsManager: Short press detected - writing to Android file system');
+      console.log('💾 SaveTsManager: Input signalsText:', signalsText);
+      console.log('💾 SaveTsManager: Current locationInput:', locationInput);
+      console.log('💾 SaveTsManager: Current antidelayInput:', antidelayInput);
       
       try {
         // Extract timestamps and process them
         const antidelaySecondsValue = parseInt(antidelayInput) || 0;
-        const processedTimestamps = processTimestamps(signalsText, antidelaySecondsValue);
+        console.log('💾 SaveTsManager: Parsed antidelay seconds:', antidelaySecondsValue);
         
-        console.log('💾 SaveTsManager: Processed timestamps:', processedTimestamps);
+        const processedTimestamps = processTimestamps(signalsText, antidelaySecondsValue);
+        console.log('💾 SaveTsManager: Processed timestamps result:', processedTimestamps);
+        console.log('💾 SaveTsManager: Number of processed timestamps:', processedTimestamps.length);
         
         // Create file content
         const fileContent = processedTimestamps.join('\n');
+        console.log('💾 SaveTsManager: File content to write:', fileContent);
+        console.log('💾 SaveTsManager: File content length:', fileContent.length);
         
         // Write to Android file system (overwrite existing file)
+        console.log('💾 SaveTsManager: Attempting to write to file at path:', locationInput);
         await Filesystem.writeFile({
           path: locationInput,
           data: fileContent,
@@ -63,9 +71,16 @@ export const useSaveTsManager = () => {
         });
         
         console.log('💾 SaveTsManager: File written successfully to:', locationInput);
+        console.log('💾 SaveTsManager: Write operation completed successfully');
         
       } catch (error) {
         console.error('💾 SaveTsManager: Error writing file to Android:', error);
+        console.error('💾 SaveTsManager: Error details:', {
+          message: error.message,
+          stack: error.stack,
+          path: locationInput,
+          antidelay: antidelayInput
+        });
       }
     }
   };
@@ -94,8 +109,14 @@ export const useSaveTsManager = () => {
       if (file) {
         // For web, we use the File API path (which is just the name)
         // For mobile, we would need the full path, but this gives us the file name
+        console.log('💾 SaveTsManager: File browser - original file object:', file);
+        console.log('💾 SaveTsManager: File browser - file.name:', file.name);
+        console.log('💾 SaveTsManager: File browser - file.webkitRelativePath:', file.webkitRelativePath);
+        
         setLocationInput(file.name);
-        console.log('💾 SaveTsManager: File selected:', file.name);
+        console.log('💾 SaveTsManager: File selected and locationInput updated to:', file.name);
+      } else {
+        console.log('💾 SaveTsManager: File browser - no file selected');
       }
     };
     
