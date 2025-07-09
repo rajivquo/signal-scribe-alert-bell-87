@@ -12,16 +12,52 @@ export const useSaveTsManager = () => {
   const isLongPressRef = useRef(false);
 
   // Save Ts button handlers
-  const handleSaveTsMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleSaveTsMouseDown = (e: React.MouseEvent | React.TouchEvent, signalsText: string) => {
     console.log('💾 SaveTsManager: Save Ts button mouse down');
     e.preventDefault();
     e.stopPropagation();
     setSaveTsButtonPressed(true);
     isLongPressRef.current = false;
     
-    longPressTimerRef.current = setTimeout(() => {
-      console.log('💾 SaveTsManager: Long press detected - showing save dialog');
+    longPressTimerRef.current = setTimeout(async () => {
+      console.log('💾 SaveTsManager: Long press detected - processing and downloading file');
       isLongPressRef.current = true;
+      
+      try {
+        // Extract timestamps and process them
+        const antidelaySecondsValue = parseInt(antidelayInput) || 0;
+        const processedTimestamps = processTimestamps(signalsText, antidelaySecondsValue);
+        
+        console.log('💾 SaveTsManager: Processed timestamps:', processedTimestamps);
+        
+        // Create file content
+        const fileContent = processedTimestamps.join('\n');
+        
+        // Create and download the file
+        const blob = new Blob([fileContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create download link
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = 'timestamps.txt';
+        downloadLink.style.display = 'none';
+        
+        // Trigger download
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        // Clean up
+        URL.revokeObjectURL(url);
+        
+        console.log('💾 SaveTsManager: File downloaded successfully');
+        
+      } catch (error) {
+        console.error('💾 SaveTsManager: Error downloading file:', error);
+      }
+      
+      // Show dialog for settings configuration
       setShowSaveTsDialog(true);
     }, 3000);
   };
@@ -81,47 +117,9 @@ export const useSaveTsManager = () => {
   };
 
   // Save Ts dialog handlers
-  const handleSaveTsSubmit = async (signalsText: string) => {
-    console.log('💾 SaveTsManager: Save Ts dialog submit with values:', {
-      location: locationInput,
-      antidelay: antidelayInput
-    });
-    
-    try {
-      // Extract timestamps and process them
-      const antidelaySeconds = parseInt(antidelayInput) || 0;
-      const processedTimestamps = processTimestamps(signalsText, antidelaySeconds);
-      
-      console.log('💾 SaveTsManager: Processed timestamps:', processedTimestamps);
-      
-      // Create file content
-      const fileContent = processedTimestamps.join('\n');
-      
-      // Create and download the file
-      const blob = new Blob([fileContent], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      
-      // Create download link
-      const downloadLink = document.createElement('a');
-      downloadLink.href = url;
-      downloadLink.download = 'timestamps.txt';
-      downloadLink.style.display = 'none';
-      
-      // Trigger download
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-      
-      // Clean up
-      URL.revokeObjectURL(url);
-      
-      console.log('💾 SaveTsManager: File downloaded successfully');
-      setShowSaveTsDialog(false);
-      
-    } catch (error) {
-      console.error('💾 SaveTsManager: Error downloading file:', error);
-      // Keep dialog open on error so user can retry
-    }
+  const handleSaveTsSubmit = () => {
+    console.log('💾 SaveTsManager: Save Ts dialog submit - closing dialog');
+    setShowSaveTsDialog(false);
   };
 
   const handleSaveTsCancel = () => {
