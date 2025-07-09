@@ -47,6 +47,10 @@ export const useSaveTsManager = () => {
       try {
         // Extract timestamps and process them
         const antidelaySecondsValue = parseInt(antidelayInput) || 0;
+        
+        console.log('💾 SaveTsManager: Input text:', signalsText);
+        console.log('💾 SaveTsManager: Antidelay seconds:', antidelaySecondsValue);
+        
         const processedTimestamps = processTimestamps(signalsText, antidelaySecondsValue);
         
         console.log('💾 SaveTsManager: Processed timestamps:', processedTimestamps);
