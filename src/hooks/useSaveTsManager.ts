@@ -97,25 +97,29 @@ export const useSaveTsManager = () => {
       // Create file content
       const fileContent = processedTimestamps.join('\n');
       
-      // Determine filename from location input
-      let filePath = locationInput;
-      if (!filePath.endsWith('.txt')) {
-        filePath = filePath.endsWith('/') ? filePath + 'timestamps.txt' : filePath + '/timestamps.txt';
-      }
+      // Create and download the file
+      const blob = new Blob([fileContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
       
-      // Write to file using Capacitor Filesystem
-      await Filesystem.writeFile({
-        path: filePath,
-        data: fileContent,
-        directory: Directory.External,
-        encoding: Encoding.UTF8
-      });
+      // Create download link
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = 'timestamps.txt';
+      downloadLink.style.display = 'none';
       
-      console.log('💾 SaveTsManager: File saved successfully to:', filePath);
+      // Trigger download
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      
+      // Clean up
+      URL.revokeObjectURL(url);
+      
+      console.log('💾 SaveTsManager: File downloaded successfully');
       setShowSaveTsDialog(false);
       
     } catch (error) {
-      console.error('💾 SaveTsManager: Error saving file:', error);
+      console.error('💾 SaveTsManager: Error downloading file:', error);
       // Keep dialog open on error so user can retry
     }
   };
